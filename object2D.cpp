@@ -63,7 +63,6 @@ Mesh* object2D::CreateRectangle(
         square->SetDrawMode(GL_LINE_LOOP);
     }
     else {
-        // Draw 2 triangles. Add the remaining 2 indices
         indices.push_back(0);
         indices.push_back(2);
     }

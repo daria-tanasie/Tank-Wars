@@ -1,7 +1,10 @@
 #pragma once
 
 #include "components/simple_scene.h"
+#include "lab_m1/Tema1/Tank.h"
+#include "lab_m1/Tema1/Projectile.h"
 #include <vector>
+
 
 namespace m1
 {
@@ -28,29 +31,18 @@ namespace m1
         void OnWindowResize(int width, int height) override;
         void BuildTerrain();
         void BuildMap();
-        void GetTankPos(int pos);
-        void MoveTank();
+        void MoveTank(Tank *tank, int tankNr);
+        void RenderTrajectory(Tank* tank, float deltaTime, float gravity, float magnitude);
 
     protected:
-        float cx, cy;
         glm::mat3 modelMatrix;
-        glm::mat3 projectileMatrix;
-        glm::mat3 tankMatrix;
-        glm::mat3 trajectoryMatrix;
-        float translateX, translateY;
-        float scaleX, scaleY;
-        float angularStep;
-        float factor;
-        float posTank1;
-        float angularStepPipe;
+        glm::mat3 projectileMatrix; //tank
         float fire;
 
         std::vector<double> heightMap;
         std::vector<glm::vec2> points;
-        glm::vec2 tank1;
-        glm::vec2 segmentPointsDist;
-        glm::vec2 projectilePos;
-        glm::vec2 trajectoryPos;
-        glm::vec2 vProj = glm::vec2(1, 1);
+
+        Tank* firstTank = new Tank(100, 0, 0);
+        Tank* secondTank = new Tank(400, 0, 0);
     };
 }   // namespace m1
