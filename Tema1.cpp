@@ -29,6 +29,9 @@ void Tema1::Init()
     camera->Update();
     GetCameraInput()->SetActive(false);
 
+    //glPointSize(5);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+
     BuildMap();
 
     glm::vec3 origin = glm::vec3(0, 0, 0);
@@ -52,7 +55,6 @@ void Tema1::Init()
 
     trapezeBottom = 60; // changes for the bottom trapeze
     trapezeSide = 16;
-    //middleTrapeze = glm::vec3(0, 0, 0);
 
     Mesh* bottomTrapeze = object2D::CreateTrapeze("bottomTrapeze", middleTrapeze, trapezeBottom, trapezeSide, glm::vec3(0.49, 0.48, 0.36), true);
     AddMeshToList(bottomTrapeze);
@@ -76,11 +78,6 @@ void Tema1::Init()
     AddMeshToList(healthBar1);
     Mesh* healthBarInner1 = object2D::CreateRectangle("healthBarInner1", origin, healtBarSide, healtBarLen, glm::vec3(1, 1, 1), true);
     AddMeshToList(healthBarInner1);
-
-    firstTank->hp = healtBarLen;
-    secondTank->hp = healtBarLen;
-    firstTank->damageTaken = 100;
-    secondTank->damageTaken = 100;
 }
 
 
@@ -98,55 +95,28 @@ void Tema1::FrameStart()
 
 void Tema1::Update(float deltaTimeSeconds)
 {
-    float deltaTime = 0.1f;
-    float gravity = 9.8f;
 
     BuildTerrain();
 
+    glm::ivec2 resolution = window->GetResolution();
 
-    if (firstTank->damageTaken >= 0) {
+
+    if (firstTank->hp > 0) {
         firstTank->GetTankPos(points);
         MoveTank(firstTank, 1);
-        RenderTrajectory(firstTank, deltaTime, gravity, 100.0f);
+        RenderTrajectory(firstTank, deltaTime, gravity, 90.0f);
     }
 
-    if (secondTank->damageTaken >= 0) {
+    if (secondTank->hp > 0) {
         secondTank->GetTankPos(points);
         MoveTank(secondTank, 2);
-        RenderTrajectory(secondTank, deltaTime, gravity, 100.0f);
+        RenderTrajectory(secondTank, deltaTime, gravity, 90.0f);
     }
 
-    for (int i = 0; i < firstTank->projectiles.size(); i++) {
-        Projectile& currentProj = firstTank->projectiles[i];
-        currentProj.position += currentProj.v * deltaTime;
-        currentProj.v.y -= gravity * deltaTime;
-        projectileMatrix = glm::mat3(1);
-        projectileMatrix *= transform2D::Translate(currentProj.position.x, currentProj.position.y);
+    Shoot(firstTank, secondTank);
+    Shoot(secondTank, firstTank);
 
-        if (currentProj.position.y > 10 + secondTank->y
-                && (currentProj.position.x > secondTank->x - 30 && currentProj.position.x < secondTank->x + 30)) {
-            secondTank->damageTaken -= 2;
-        }
-
-
-        RenderMesh2D(meshes["projectileTank1"], shaders["VertexColor"], projectileMatrix);   
-    }
-
-    for (int i = 0; i < secondTank->projectiles.size(); i++) {
-        Projectile& currentProj = secondTank->projectiles[i];
-        currentProj.position += currentProj.v * deltaTime;
-        currentProj.v.y -= gravity * deltaTime;
-        projectileMatrix = glm::mat3(1);
-        projectileMatrix *= transform2D::Translate(currentProj.position.x, currentProj.position.y);
-
-        if (currentProj.position.y > 10 + firstTank->y
-            && (currentProj.position.x > firstTank->x - 15 && currentProj.position.x < firstTank->x + 15)) {
-            firstTank->damageTaken -= 2;
-        }
-
-
-        RenderMesh2D(meshes["projectileTank1"], shaders["VertexColor"], projectileMatrix);
-    }
+    UpdateTerrain(deltaTimeSeconds);
 }
 
 void Tema1::FrameEnd()
@@ -169,15 +139,15 @@ void Tema1::OnInputUpdate(float deltaTime, int mods)
 
     if (window->KeyHold(GLFW_KEY_W))
     {
-        if (firstTank->angularStepPipe - RADIANS(40) * deltaTime > -RADIANS(90)) {
-            firstTank->angularStepPipe -= RADIANS(40) * deltaTime;
+        if (firstTank->angularStepPipe - RADIANS(30) * deltaTime > -RADIANS(90)) {
+            firstTank->angularStepPipe -= RADIANS(30) * deltaTime;
         }
     }
 
     if (window->KeyHold(GLFW_KEY_S))
     {
-        if (firstTank->angularStepPipe + RADIANS(40) * deltaTime <  RADIANS(90)) {
-            firstTank->angularStepPipe += RADIANS(40) * deltaTime;
+        if (firstTank->angularStepPipe + RADIANS(30) * deltaTime <  RADIANS(90)) {
+            firstTank->angularStepPipe += RADIANS(30) * deltaTime;
         }
     }
 
@@ -196,15 +166,15 @@ void Tema1::OnInputUpdate(float deltaTime, int mods)
 
     if (window->KeyHold(GLFW_KEY_UP))
     {
-        if (secondTank->angularStepPipe - RADIANS(40) * deltaTime > -RADIANS(90)) {
-            secondTank->angularStepPipe -= RADIANS(40) * deltaTime;
+        if (secondTank->angularStepPipe - RADIANS(30) * deltaTime > -RADIANS(90)) {
+            secondTank->angularStepPipe -= RADIANS(30) * deltaTime;
         }
     }
 
     if (window->KeyHold(GLFW_KEY_DOWN))
     {
-        if (secondTank->angularStepPipe + RADIANS(40) * deltaTime < RADIANS(90)) {
-            secondTank->angularStepPipe += RADIANS(40) * deltaTime;
+        if (secondTank->angularStepPipe + RADIANS(30) * deltaTime < RADIANS(90)) {
+            secondTank->angularStepPipe += RADIANS(30) * deltaTime;
         }
     }
 }
@@ -215,7 +185,7 @@ void Tema1::OnKeyPress(int key, int mods)
     if (window->KeyHold(GLFW_KEY_SPACE)) {
         glm::vec2 projectilePos = glm::vec2(firstTank->tankMatrix[2][0], firstTank->tankMatrix[2][1]);
         glm::vec2 vProj = glm::vec2(cos(firstTank->angularStepPipe + firstTank->angularStep + RADIANS(90)),
-            sin(firstTank->angularStepPipe + firstTank->angularStep + RADIANS(90))) * 100.0f;
+            sin(firstTank->angularStepPipe + firstTank->angularStep + RADIANS(90))) * 90.0f;
 
         Projectile proj = Projectile(projectilePos, vProj);
         firstTank->projectiles.push_back(proj);
@@ -224,7 +194,7 @@ void Tema1::OnKeyPress(int key, int mods)
     if (window->KeyHold(GLFW_KEY_ENTER)) {
         glm::vec2 projectilePos = glm::vec2(secondTank->tankMatrix[2][0], secondTank->tankMatrix[2][1]);
         glm::vec2 vProj = glm::vec2(cos(secondTank->angularStepPipe + secondTank->angularStep + RADIANS(90)),
-            sin(secondTank->angularStepPipe + secondTank->angularStep + RADIANS(90))) * 100.0f;
+            sin(secondTank->angularStepPipe + secondTank->angularStep + RADIANS(90))) * 90.0f;
 
         Projectile proj = Projectile(projectilePos, vProj);
         secondTank->projectiles.push_back(proj);
@@ -269,18 +239,16 @@ void Tema1::BuildMap()
     glm::ivec2 resolution = window->GetResolution();
     heightMap.resize(resolution.x);
     points.resize(resolution.x);
-    double cnt = 0.01;
 
     for (int i = 0; i < resolution.x; i++)
     {
-        heightMap[i] = (0.2 * sin(cnt * i) + 1.5 * sin(0.5 * cnt * i) + 0.5 * sin(3 * cnt * i)) * 200;  // 200 pt cat de mari sunt damburile
+        heightMap[i] = 100 * sin(0.0005 * i) + 118 * sin(0.008 * i) + 150 * sin(0.001 * i) + 140 * sin(0.005 * i) + 69;  // 200 pt cat de mari sunt damburile
     }
 }
 
 void Tema1::BuildTerrain()
 {
     double maxY;
-    double scaling = 10; // pt cat de intinse sunt parabolele
 
     for (double i = 0; i < heightMap.size() - 1; i++) {
 
@@ -291,15 +259,16 @@ void Tema1::BuildTerrain()
             maxY = heightMap[i];
         }
 
-        float factor = (heightMap[i + 1] - heightMap[i]) / scaling;
+        float factor = (heightMap[i + 1] - heightMap[i]);
 
-        points[i].x = i * 2.5;
+        points[i].x = i;
         points[i].y = heightMap[i];
 
         modelMatrix = glm::mat3(1);
-        modelMatrix *= transform2D::Translate(i * 2.5, heightMap[i] * 0.001); // partea de jos
+        modelMatrix *= transform2D::Translate(i, heightMap[i]);
         modelMatrix *= transform2D::Shear(factor);
-        modelMatrix *= transform2D::Scale(scaling, maxY);
+        modelMatrix *= transform2D::Scale(1, maxY);
+
         RenderMesh2D(meshes["square1"], shaders["VertexColor"], modelMatrix);
     }
 }
@@ -319,6 +288,7 @@ void Tema1::RenderTrajectory(Tank* tank, float deltaTime, float gravity, float m
         trajPointsPos.y = tank->trajectoryPos.y + v.y * time - 0.5f * gravity * time * time;
         tank->trajectoryMatrix = glm::mat3(1);
         tank->trajectoryMatrix *= transform2D::Translate(trajPointsPos.x, trajPointsPos.y);
+
         RenderMesh2D(meshes["trajectory"], shaders["VertexColor"], tank->trajectoryMatrix);
     }
 }
@@ -355,7 +325,7 @@ void Tema1::MoveTank(Tank* tank, int tankNr)
     RenderMesh2D(meshes["healthBar1"], shaders["VertexColor"], tank->tankMatrix);
 
     tank->healthMatrix = tank->tankMatrix;
-    tank->healthMatrix *= transform2D::Scale(1, 0.01 * tank->damageTaken);
+    tank->healthMatrix *= transform2D::Scale(1, 0.01 * tank->hp);
     RenderMesh2D(meshes["healthBarInner1"], shaders["VertexColor"], tank->healthMatrix);
 
     tank->tankMatrix = glm::mat3(1);
@@ -376,4 +346,76 @@ void Tema1::MoveTank(Tank* tank, int tankNr)
     tank->tankMatrix *= transform2D::Rotate(tank->angularStepPipe);
 
     RenderMesh2D(meshes["pipeTank1"], shaders["VertexColor"], tank->tankMatrix);
+}
+
+void Tema1::Shoot(Tank* tank1, Tank* tank2)
+{
+    glm::ivec2 resolution = window->GetResolution();
+
+    for (int i = 0; i < tank1->projectiles.size(); i++) {
+        Projectile& currentProj = tank1->projectiles[i];
+        currentProj.position += currentProj.v * deltaTime;
+        currentProj.v.y -= gravity * deltaTime;
+        projectileMatrix = glm::mat3(1);
+        projectileMatrix *= transform2D::Translate(currentProj.position.x, currentProj.position.y);
+
+        if (currentProj.position.x + 5 > resolution.x || currentProj.position.x - 5 < 0
+                || currentProj.position.y < 0) {
+            tank1->projectiles.erase(tank1->projectiles.begin() + i);
+            i--;
+        }
+
+        if (currentProj.position.y > tank2->y - 30 && currentProj.position.y < tank2->y + 30
+            && currentProj.position.x > tank2->x - 45 && currentProj.position.x < tank2->x + 45) {
+            tank2->hp -= 20;
+            tank1->projectiles.erase(tank1->projectiles.begin() + i);
+            i--;
+        }
+        else {
+            RenderMesh2D(meshes["projectileTank1"], shaders["VertexColor"], projectileMatrix);
+        }
+
+        float t = (currentProj.position.x - points[(int)(currentProj.position.x)].x)
+            / (points[(int)(currentProj.position.x) + 1].x - points[(int)(currentProj.position.x)].x);
+
+        float yExp = points[(int)(currentProj.position.x)].y
+            + t * (points[(int)(currentProj.position.x) + 1].y - points[(int)(currentProj.position.x)].y);
+
+        if (currentProj.position.x > 0 && currentProj.position.x < resolution.x
+            && currentProj.position.y - yExp < 3) {
+
+            for (int j = currentProj.position.x - 50 + 1; j <= currentProj.position.x + 50; j++) {
+
+                float hole = -sqrt(currentProj.explosionRadius * currentProj.explosionRadius
+                    - (j - currentProj.position.x) * (j - currentProj.position.x)) + yExp;
+
+                if (heightMap[j] > hole) {
+                    heightMap[j] = hole;
+                }
+            }
+
+            tank1->projectiles.erase(tank1->projectiles.begin() + i);
+            i--;
+        }
+        else {
+            RenderMesh2D(meshes["projectileTank1"], shaders["VertexColor"], projectileMatrix);
+        }
+    }
+}
+
+void Tema1::UpdateTerrain(float deltaTimeSeconds)
+{
+    glm::ivec2 resolution = window->GetResolution();
+
+    for (int i = 0; i < resolution.x - 1; i++) {
+
+        if (heightMap[i] - 5 > heightMap[i + 1]) {
+            heightMap[i] -= deltaTimeSeconds * 100;
+            heightMap[i + 1] += deltaTimeSeconds * 100;
+        }
+        else if (heightMap[i + 1] - 5 > heightMap[i]) {
+            heightMap[i] += deltaTimeSeconds * 100;
+            heightMap[i + 1] -= deltaTimeSeconds * 100;
+        }
+    }
 }

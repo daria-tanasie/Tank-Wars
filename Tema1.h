@@ -33,16 +33,21 @@ namespace m1
         void BuildMap();
         void MoveTank(Tank *tank, int tankNr);
         void RenderTrajectory(Tank* tank, float deltaTime, float gravity, float magnitude);
+        void Shoot(Tank* tank1, Tank* tank2);
+        void UpdateTerrain(float deltaTimeSeconds);
 
     protected:
         glm::mat3 modelMatrix;
-        glm::mat3 projectileMatrix; //tank
+        glm::mat3 projectileMatrix;
+
+        float deltaTime = 0.1f;
+        float gravity = 9.8f;
         float fire;
 
         std::vector<double> heightMap;
         std::vector<glm::vec2> points;
 
-        Tank* firstTank = new Tank(100, 0, 0);
-        Tank* secondTank = new Tank(400, 0, 0);
+        Tank* firstTank = new Tank(100, 0, 0, 100);
+        Tank* secondTank = new Tank(1000, 0, 0, 100);
     };
 }   // namespace m1

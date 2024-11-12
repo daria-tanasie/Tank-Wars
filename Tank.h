@@ -30,13 +30,7 @@ namespace m1
 
 		std::vector<Projectile> projectiles;
 
-		Tank(float pos, float tankAngle, float pipeAngle) {
-			posTank = pos;
-			angularStep = tankAngle;
-			angularStepPipe = pipeAngle;
-		}
-			
-		Tank();
-		~Tank();
+		Tank(float pos, float tankAngle, float pipeAngle, float hpTank)
+			: posTank(pos), angularStep(tankAngle), angularStepPipe(pipeAngle), hp(hpTank) {}
 	};
 }

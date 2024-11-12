@@ -19,8 +19,8 @@ Mesh* object2D::CreateSquare(
     {
         VertexFormat(corner, color),
         VertexFormat(corner + glm::vec3(length, 0, 0), color),
-        VertexFormat(corner + glm::vec3(length, length, 0), color),
-        VertexFormat(corner + glm::vec3(0, length, 0), color)
+        VertexFormat(corner + glm::vec3(length, -length, 0), color),
+        VertexFormat(corner + glm::vec3(0, -length, 0), color)
     };
 
     Mesh* square = new Mesh(name);
