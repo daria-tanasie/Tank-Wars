@@ -14,9 +14,6 @@ namespace m1
 		int explosionRadius = 50;
 
 		Projectile(glm::vec2 pos, glm::vec2 vProj)
-		{
-			position = pos;
-			v = vProj;
-		}
+			: position(pos), v(vProj) {}
 	};
 }
