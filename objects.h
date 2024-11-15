@@ -6,7 +6,7 @@
 #include "utils/glm_utils.h"
 
 
-namespace object2D
+namespace objects
 {
     Mesh* CreateSquare(const std::string& name, glm::vec3 leftBottomCorner, float length, glm::vec3 color, bool fill = false);
     Mesh* CreateTrapeze(const std::string& name, glm::vec3 leftBottomCorner, float bottomLength, float sideLength, glm::vec3 color, bool fill);

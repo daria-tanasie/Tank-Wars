@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "lab_m1/Tema1/transform2D.h"
-#include "lab_m1/Tema1/object2D.h"
+#include "lab_m1/Tema1/objects.h"
 #include "lab_m1/Tema1/Tema1.h"
 
 using namespace std;

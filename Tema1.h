@@ -3,6 +3,7 @@
 #include "components/simple_scene.h"
 #include "lab_m1/Tema1/Tank.h"
 #include "lab_m1/Tema1/Projectile.h"
+#include "lab_m1/Tema1/objects.h"
 #include <vector>
 
 
@@ -39,6 +40,7 @@ namespace m1
     protected:
         glm::mat3 modelMatrix;
         glm::mat3 projectileMatrix;
+        glm::mat3 projStart;
 
         float magnitude = 700.0f;
         float gravity = 700.0f;

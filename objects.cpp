@@ -1,4 +1,4 @@
-#include "object2D.h"
+#include "objects.h"
 
 #include <vector>
 
@@ -6,7 +6,7 @@
 #include "utils/gl_utils.h"
 
 
-Mesh* object2D::CreateSquare(
+Mesh* objects::CreateSquare(
     const std::string& name,
     glm::vec3 leftBottomCorner,
     float length,
@@ -39,7 +39,7 @@ Mesh* object2D::CreateSquare(
     return square;
 }
 
-Mesh* object2D::CreateRectangle(
+Mesh* objects::CreateRectangle(
     const std::string& name,
     glm::vec3 center,
     float littleSide,
@@ -71,7 +71,7 @@ Mesh* object2D::CreateRectangle(
     return square;
 }
 
-Mesh* object2D::CreateTrapeze(
+Mesh* objects::CreateTrapeze(
     const std::string& name,
     glm::vec3 bottomMiddle,
     float bottomLength,
@@ -104,7 +104,7 @@ Mesh* object2D::CreateTrapeze(
     return trapeze;
 }
 
-Mesh* object2D::CreateCircle(
+Mesh* objects::CreateCircle(
     const std::string& name,
     glm::vec3 center,
     int nrSegments,

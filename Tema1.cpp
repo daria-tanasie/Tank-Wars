@@ -2,11 +2,8 @@
 
 #include <vector>
 #include <iostream>
-
 #include "lab_m1/Tema1/transform2D.h"
-#include "lab_m1/Tema1/object2D.h"
-#include "lab_m1/Tema1/Tank.h"
-#include "lab_m1/Tema1/Projectile.h"
+
 
 using namespace std;
 using namespace m1;
@@ -29,7 +26,7 @@ void Tema1::Init()
     camera->Update();
     GetCameraInput()->SetActive(false);
 
-    BuildMap(); // generating the function
+    BuildMap(); // generating the function for terrain
 
     glm::vec3 origin = glm::vec3(0, 0, 0);
     glm::vec3 middleTrapeze = glm::vec3(0, 0,0);
@@ -39,38 +36,38 @@ void Tema1::Init()
     float healtBarLen = 50, healtBarSide = 9;
     float trajPointsRadius = 2, turretRadius = 30, projRadius = 5;
 
-    Mesh* square1 = object2D::CreateSquare("square1", origin, squareSide, glm::vec3(0.74, 0.73, 0.22), true);
+    Mesh* square1 = objects::CreateSquare("square1", origin, squareSide, glm::vec3(0.74, 0.73, 0.22), true);
     AddMeshToList(square1);
 
-    Mesh* upperTrapeze = object2D::CreateTrapeze("upperTrapeze", middleTrapeze, trapezeBottom, trapezeSide, glm::vec3(0.65, 0.64, 0.48), true);
+    Mesh* upperTrapeze = objects::CreateTrapeze("upperTrapeze", middleTrapeze, trapezeBottom, trapezeSide, glm::vec3(0.65, 0.64, 0.48), true);
     AddMeshToList(upperTrapeze);
-    Mesh* upperTrapeze2 = object2D::CreateTrapeze("upperTrapeze2", middleTrapeze, trapezeBottom, trapezeSide, glm::vec3(0.25, 0.52, 0.04), true);
+    Mesh* upperTrapeze2 = objects::CreateTrapeze("upperTrapeze2", middleTrapeze, trapezeBottom, trapezeSide, glm::vec3(0.25, 0.52, 0.04), true);
     AddMeshToList(upperTrapeze2);
 
     trapezeBottom = 60; // changes for the bottom trapeze
     trapezeSide = 16;
 
-    Mesh* bottomTrapeze = object2D::CreateTrapeze("bottomTrapeze", middleTrapeze, trapezeBottom, trapezeSide, glm::vec3(0.49, 0.48, 0.36), true);
+    Mesh* bottomTrapeze = objects::CreateTrapeze("bottomTrapeze", middleTrapeze, trapezeBottom, trapezeSide, glm::vec3(0.49, 0.48, 0.36), true);
     AddMeshToList(bottomTrapeze);
 
-    Mesh* circleTank1 = object2D::CreateCircle("circleTank1", origin, 60, turretRadius, 1.0f, glm::vec3(0.65, 0.64, 0.48), true);
+    Mesh* circleTank1 = objects::CreateCircle("circleTank1", origin, 60, turretRadius, 1.0f, glm::vec3(0.65, 0.64, 0.48), true);
     AddMeshToList(circleTank1);
 
-    Mesh* circleTank2 = object2D::CreateCircle("circleTank2", origin, 60, turretRadius, 1.0f, glm::vec3(0.25, 0.52, 0.04), true);
+    Mesh* circleTank2 = objects::CreateCircle("circleTank2", origin, 60, turretRadius, 1.0f, glm::vec3(0.25, 0.52, 0.04), true);
     AddMeshToList(circleTank2);
 
-    Mesh* pipeTank1 = object2D::CreateRectangle("pipeTank1", origin, pipeLittleSide, pipeBigSide, glm::vec3(0.27, 0.27, 0.04), true);
+    Mesh* pipeTank1 = objects::CreateRectangle("pipeTank1", origin, pipeLittleSide, pipeBigSide, glm::vec3(0.27, 0.27, 0.04), true);
     AddMeshToList(pipeTank1);
 
-    Mesh* projectileTank1 = object2D::CreateCircle("projectileTank1", origin, 40, projRadius, 2.0f, glm::vec3(0, 0, 0), true);
+    Mesh* projectileTank1 = objects::CreateCircle("projectileTank1", origin, 40, projRadius, 2.0f, glm::vec3(0, 0, 0), true);
     AddMeshToList(projectileTank1);
 
-    Mesh* trajectory = object2D::CreateCircle("trajectory", origin, 40, trajPointsRadius, 2.0f, glm::vec3(1, 1, 1), true);
+    Mesh* trajectory = objects::CreateCircle("trajectory", origin, 40, trajPointsRadius, 2.0f, glm::vec3(1, 1, 1), true);
     AddMeshToList(trajectory);
 
-    Mesh* healthBar1 = object2D::CreateRectangle("healthBar1", origin, healtBarSide, healtBarLen, glm::vec3(1, 1, 1), false);
+    Mesh* healthBar1 = objects::CreateRectangle("healthBar1", origin, healtBarSide, healtBarLen, glm::vec3(1, 1, 1), false);
     AddMeshToList(healthBar1);
-    Mesh* healthBarInner1 = object2D::CreateRectangle("healthBarInner1", origin, healtBarSide, healtBarLen, glm::vec3(1, 1, 1), true);
+    Mesh* healthBarInner1 = objects::CreateRectangle("healthBarInner1", origin, healtBarSide, healtBarLen, glm::vec3(1, 1, 1), true);
     AddMeshToList(healthBarInner1);
 }
 
@@ -91,8 +88,6 @@ void Tema1::Update(float deltaTimeSeconds)
 {
 
     BuildTerrain();
-
-    glm::ivec2 resolution = window->GetResolution();
 
     if (firstTank->hp > 0) {
         firstTank->GetTankPos(points);
@@ -183,7 +178,9 @@ void Tema1::OnInputUpdate(float deltaTime, int mods)
 void Tema1::OnKeyPress(int key, int mods)
 {
     if (window->KeyHold(GLFW_KEY_SPACE)) {
-        glm::vec2 projectilePos = glm::vec2(firstTank->tankMatrix[2][0], firstTank->tankMatrix[2][1]);
+        projStart = glm::mat3(1);
+        projStart = firstTank->tankMatrix * transform2D::Translate(0, 50);
+        glm::vec2 projectilePos = glm::vec2(projStart[2][0], projStart[2][1]);
         glm::vec2 vProj = glm::vec2(cos(firstTank->angularStepPipe + firstTank->angularStep + RADIANS(90)),
             sin(firstTank->angularStepPipe + firstTank->angularStep + RADIANS(90))) * magnitude;
 
@@ -192,7 +189,9 @@ void Tema1::OnKeyPress(int key, int mods)
     }
 
     if (window->KeyHold(GLFW_KEY_ENTER)) {
-        glm::vec2 projectilePos = glm::vec2(secondTank->tankMatrix[2][0], secondTank->tankMatrix[2][1]);
+        projStart = glm::mat3(1);
+        projStart = secondTank->tankMatrix * transform2D::Translate(0, 50);
+        glm::vec2 projectilePos = glm::vec2(projStart[2][0], projStart[2][1]);
         glm::vec2 vProj = glm::vec2(cos(secondTank->angularStepPipe + secondTank->angularStep + RADIANS(90)),
             sin(secondTank->angularStepPipe + secondTank->angularStep + RADIANS(90))) * magnitude;
 
@@ -277,7 +276,10 @@ void Tema1::RenderTrajectory(Tank* tank, Tank* enemy, float gravity, float magni
 {
     glm::ivec2 resolution = window->GetResolution();
 
-    tank->trajectoryPos = glm::vec2(tank->tankMatrix[2][0], tank->tankMatrix[2][1]);
+    tank->trajectoryMatrix = glm::mat3(1);
+    tank->trajectoryMatrix = tank->tankMatrix * transform2D::Translate(0, 50);
+
+    tank->trajectoryPos = glm::vec2(tank->trajectoryMatrix[2][0], tank->trajectoryMatrix[2][1]);
     glm::vec2 v = glm::vec2(cos(tank->angularStepPipe + tank->angularStep + RADIANS(90)),
                     sin(tank->angularStepPipe + tank->angularStep + RADIANS(90))) * magnitude;
 
@@ -299,7 +301,7 @@ void Tema1::RenderTrajectory(Tank* tank, Tank* enemy, float gravity, float magni
         }
 
         if ((int)(trajPointsPos.x) > enemy->x - 45 && (int)(trajPointsPos.x) < enemy->x + 45
-                && (int)(trajPointsPos.y) - 45 < secondTank->y) {
+                && (int)(trajPointsPos.y) - 45 < secondTank->y && enemy->hp > 0) {
             break;
         }
 
